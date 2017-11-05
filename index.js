@@ -92,7 +92,7 @@ function getPerson(name) {
     OPTIONAL { ?person rdfs:comment ?comment . FILTER (LANG(?comment) = 'en') } .
     FILTER (LANG(?name) = 'en') .
     FILTER (LANG(?abstract) = 'en') .
-    FILTER (regex(?label, "^${escape(name)}", "i") AND LANG(?label) = 'en')
+    FILTER (regex(?label, "${escape(name)}", "i") AND LANG(?label) = 'en')
   }
   ORDER BY $label
   `;
@@ -118,7 +118,7 @@ function getLocation(name) {
     OPTIONAL { ?location rdfs:comment ?comment . FILTER (LANG(?comment) = 'en') } .
     FILTER (LANG(?name) = 'en') .
     FILTER (LANG(?abstract) = 'en') .
-    FILTER (regex(?label, "^${escape(name)}", "i") AND LANG(?label) = 'en')
+    FILTER (regex(?label, "${escape(name)}", "i") AND LANG(?label) = 'en')
   }
   ORDER BY $label
   `;
@@ -147,7 +147,7 @@ function getOrganization(name) {
     OPTIONAL { ?organization rdfs:comment ?comment . FILTER (LANG(?comment) = 'en') } .
     FILTER (LANG(?name) = 'en') .
     FILTER (LANG(?abstract) = 'en') .
-    FILTER (regex(?label, "^${escape(name)}", "i") AND LANG(?label) = 'en')
+    FILTER (regex(?label, "${escape(name)}", "i") AND LANG(?label) = 'en')
   }
   ORDER BY $label
   `;
