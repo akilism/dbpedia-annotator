@@ -35,7 +35,7 @@ function noneMatch(a, b) {
   }
 }
 
-function runQuery(query) {
+function runQuery(type, query) {
   return new Promise((resolve, reject) => {
     const client = new SparqlClient(endPoint);
     console.log('Query to ' + endPoint);
@@ -49,7 +49,7 @@ function runQuery(query) {
       // combine identical records.
       // TODO: refactor this to use Sets.
       const results = response.results.bindings.reduce((acc, itm) => {
-        const key = itm.person.value;
+        const key = itm[type].value;
         if (acc[key]) {
           const mergeItm = { ...acc[key] };
           Object.keys(itm).forEach(k => {
@@ -92,14 +92,70 @@ function getPerson(name) {
     OPTIONAL { ?person rdfs:comment ?comment . FILTER (LANG(?comment) = 'en') } .
     FILTER (LANG(?name) = 'en') .
     FILTER (LANG(?abstract) = 'en') .
-    FILTER (regex(?label, "${escape(name)}", "i") AND LANG(?label) = 'en')
+    FILTER (regex(?label, "^${escape(name)}", "i") AND LANG(?label) = 'en')
   }
   ORDER BY $label
   `;
 
-  return runQuery(query);
+  return runQuery('person', query);
+}
+
+function getLocation(name) {
+  const query = `${PREFIX}
+  SELECT DISTINCT
+    ?abstract ?comment ?country
+    ?geometry ?label ?location
+    ?name ?subject ?isPartOf
+  WHERE {
+    ?location a dbo:Location .
+    ?location foaf:name ?name .
+    ?location rdfs:label ?label .
+    ?location dbo:abstract ?abstract .
+    OPTIONAL { ?location geo:geometry ?geometry } .
+    OPTIONAL { ?location dbo:country ?country } .
+    OPTIONAL { ?location dct:subject ?subject } .
+    OPTIONAL { ?location dbo:isPartOf ?isPartOf } .
+    OPTIONAL { ?location rdfs:comment ?comment . FILTER (LANG(?comment) = 'en') } .
+    FILTER (LANG(?name) = 'en') .
+    FILTER (LANG(?abstract) = 'en') .
+    FILTER (regex(?label, "^${escape(name)}", "i") AND LANG(?label) = 'en')
+  }
+  ORDER BY $label
+  `;
+
+  return runQuery('location', query);
+}
+
+function getOrganization(name) {
+  const query = `${PREFIX}
+  SELECT DISTINCT
+    ?abstract ?comment ?foundingYear
+    ?industry ?label ?location
+    ?locationCity ?locationCountry ?name
+    ?organization ?subject
+  WHERE {
+    ?organization a dbo:Organisation .
+    ?organization foaf:name ?name .
+    ?organization rdfs:label ?label .
+    ?organization dbo:abstract ?abstract .
+    OPTIONAL { ?organization dbo:location ?location } .
+    OPTIONAL { ?organization dbo:locationCity ?locationCity } .
+    OPTIONAL { ?organization dbo:locationCountry ?locationCountry } .
+    OPTIONAL { ?organization dbo:foundingYear ?foundingYear } .
+    OPTIONAL { ?organization dbo:industry ?industry } .
+    OPTIONAL { ?organization dct:subject ?subject } .
+    OPTIONAL { ?organization rdfs:comment ?comment . FILTER (LANG(?comment) = 'en') } .
+    FILTER (LANG(?name) = 'en') .
+    FILTER (LANG(?abstract) = 'en') .
+    FILTER (regex(?label, "^${escape(name)}", "i") AND LANG(?label) = 'en')
+  }
+  ORDER BY $label
+  `;
+  return runQuery('organization', query);
 }
 
 module.exports = {
+  getLocation,
+  getOrganization,
   getPerson
 };
